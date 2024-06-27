@@ -4,7 +4,7 @@ from fastapi import FastAPI, WebSocket
 import datetime
 import json
 
-from langchain import hub
+from langchain import HuggingFaceHub
 
 from vocode.streaming.models.agent import ChatGPTAgentConfig
 from vocode.streaming.models.synthesizer import AzureSynthesizerConfig
@@ -41,9 +41,26 @@ def get_system_prompt():
     """
     This function generates a dynamic SYSTEM_PROMPT with the current date.
     """
+    return """
+        You are Alex Dupont, a potential buyer who will receive a cold call. Here are your key characteristics:
+
+        Disposition: You are generally rude but less inquisitive. You tend to cut off conversations quickly if you find them uninteresting.
+        Current Situation: You are having issues with your current contact data provider and are dissatisfied with their service.
+        Objective: The sales representative calling you is trying to sell you a data solution similar to Cognism or Lusha.
+        Your Role:
+        Engage with the sales representative as Alex Dupont. Keep in mind:
+
+        Respond with a brusque and dismissive tone.
+        Show limited curiosity or patience during the conversation.
+        Mention your frustrations with your current contact data provider if relevant.
+        End the conversation abruptly if the sales pitch does not pique your interest quickly.
+        Interaction Simulation:
+        Scenario: You receive a cold call from a sales representative who is offering a new contact data solution that could potentially solve the issues you are facing with your current provider.
+        Objective for Alex: Stay true to your character. You should express your dissatisfaction with the current service and only engage if you are convinced that the new solution is immediately valuable.
+    """
     if langsmith_system_prompt:
         # Retrieve the system message from langsmith and format it with the current date
-        req = hub.pull(langsmith_system_prompt)
+        req = HuggingFaceHub.pull(langsmith_system_prompt)
         return req.format_messages(
             current_date=datetime.datetime.now().strftime("%Y-%m-%d"),
             question=""
@@ -74,7 +91,7 @@ conversation_router = ConversationRouter(
 
 app.include_router(conversation_router.get_router())
 
-@app.websocket("/api/ping")
+@app.websocket("/api/ping/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
@@ -95,7 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 "clientSendTime": message.get("clientSendTime")
             })
 
-@app.get("/api/ping")
+@app.get("/api/ping/")
 async def get_ping():
     """
     This function handles GET requests at the /api/ping endpoint.

@@ -9,8 +9,8 @@ import { BottomNavBar } from "@/components/bottom-nav-bar"
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Vocode Next.js Vercel Template',
-  description: 'Discover the potential of voice-based large language models at Vocode',
+  title: 'Actyte MVC',
+  description: 'Actyte MVC',
 }
 
 export default function RootLayout({
